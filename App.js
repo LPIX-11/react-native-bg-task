@@ -4,31 +4,45 @@ import PushNotificationIOS from "@react-native-community/push-notification-ios";
 import PushNotification from 'react-native-push-notification';
 import { Platform, StyleSheet, Text, View } from 'react-native';
 
-export default function App() {
-  const _sendPushNotification = () => {
-    if (Platform.OS == 'android') {
-      PushNotification.createChannel(
-        {
-          channelId: "default_notification_channel_id", // (required)
-          channelName: "Notification channel", // (required)
-          channelDescription: "A channel to categorise mood notifications", // (optional) default: undefined.
-          soundName: "default", // (optional) See `soundName` parameter of `localNotification` function
-          importance: 4, // (optional) default: 4. Int value of the Android notification importance
-          vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
-        },
-        (created) => console.log(`createChannel returned '${created}'`) // (optional) callback returns whether the channel was created, false means it already existed.
-      );
-    }
+import BackgroundTask from 'react-native-background-task';
 
-    PushNotification.localNotificationSchedule({
-      //... You can use all the options from localNotifications
-      message: `Hi there, it's ${Date(Date.now()).toLocaleString().split(' ')[4]}\nJust a reminder.`, // (required)
-      date: new Date(Date.now() + 3 * 1000), // in 60 secs
-      allowWhileIdle: false, // (optional) set notification to work while on doze, default: false
-    });
+const _sendPushNotification = () => {
+  if (Platform.OS == 'android') {
+    PushNotification.createChannel(
+      {
+        channelId: "default_notification_channel_id", // (required)
+        channelName: "Notification channel", // (required)
+        channelDescription: "A channel to categorise mood notifications", // (optional) default: undefined.
+        soundName: "default", // (optional) See `soundName` parameter of `localNotification` function
+        importance: 4, // (optional) default: 4. Int value of the Android notification importance
+        vibrate: true, // (optional) default: true. Creates the default vibration patten if true.
+      },
+      (created) => console.log(`createChannel returned '${created}'`) // (optional) callback returns whether the channel was created, false means it already existed.
+    );
   }
 
+  PushNotification.localNotificationSchedule({
+    //... You can use all the options from localNotifications
+    message: `Hi there, it's ${Date(Date.now()).toLocaleString().split(' ')[4]}\nJust a reminder.`, // (required)
+    date: new Date(Date.now() + 3 * 1000), // in 60 secs
+    allowWhileIdle: false, // (optional) set notification to work while on doze, default: false
+  });
+}
+
+BackgroundTask.define(() => {
+  _sendPushNotification();
+
+  BackgroundTask.finish()
+})
+
+export default function App() {
+
   useEffect(() => {
+
+    BackgroundTask.schedule({
+      period: 300, // Aim to run every 30 mins - more conservative on battery
+    })
+
     PushNotification.configure({
       // (optional) Called when Token is generated (iOS and Android)
       onRegister: function (token) {
@@ -78,8 +92,6 @@ export default function App() {
        */
       requestPermissions: Platform.OS === 'ios',
     });
-
-    _sendPushNotification();
 
   }, []);
 
