@@ -1,0 +1,12 @@
+{
+  "name": "RNBackgroundTask",
+  "displayName": "RNBackgroundTask",
+  "expo": {
+    "name": "RNBackgroundTask",
+    "slug": "RNBackgroundTask",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
